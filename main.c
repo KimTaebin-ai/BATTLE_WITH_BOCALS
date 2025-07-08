@@ -39,7 +39,7 @@ void generate_mouse_click(Display *dpy) {
     XTestFakeButtonEvent(dpy, 1, False, 0);
     XFlush(dpy);
     
-    printf("마우스 클릭: 좌클릭\n");
+    printf("좌클릭\n");
 }
 
 int main() {
@@ -54,7 +54,6 @@ int main() {
     srand(time(NULL));
     
     printf("program on :)\n");
-    printf("10분 이내의 랜덤한 시간마다 랜덤한 키보드/마우스 이벤트가 발생합니다.\n\n");
     
     int key_count = sizeof(random_keys) / sizeof(random_keys[0]);
     
@@ -62,7 +61,7 @@ int main() {
         // 1초 ~ 10분 (600초) 사이의 랜덤한 시간 대기
         int wait_seconds = 1 + rand() % 600;
         
-        printf("다음 이벤트까지 %d초 대기 중...\n", wait_seconds);
+        printf("%d초...\n", wait_seconds);
         
         // 1초씩 카운트다운하며 대기
         for (int i = wait_seconds; i > 0; i--) {
