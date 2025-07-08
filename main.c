@@ -18,13 +18,6 @@ KeySym random_keys[] = {
     XK_space, XK_Return, XK_Tab
 };
 
-// 이벤트 타입 정의
-typedef enum {
-    EVENT_KEY_PRESS,
-    EVENT_MOUSE_MOVE,
-    EVENT_MOUSE_CLICK
-} EventType;
-
 // 마우스 이벤트 함수
 void generate_mouse_move(Display *dpy) {
     Screen *screen = DefaultScreenOfDisplay(dpy);
