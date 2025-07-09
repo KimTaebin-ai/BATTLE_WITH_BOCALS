@@ -18,7 +18,48 @@ KeySym random_keys[] = {
     XK_space, XK_Return, XK_Tab
 };
 
-// 마우스 이벤트 함수
+// 랜덤 시간 생성 함수
+int generate_random_wait_time() {
+    return 1 + rand() % 600; // 1초 ~ 10분 (600초)
+}
+
+// 카운트다운 함수
+void countdown(int seconds) {
+    printf("%d초...\n", seconds);
+    
+    for (int i = seconds; i > 0; i--) {
+        printf("\r남은 시간: %d초   ", i);
+        fflush(stdout);
+        sleep(1);
+    }
+    printf("\r남은 시간: 0초   \n");
+}
+
+// 키보드 입력 함수
+void generate_keyboard_input(Display *dpy) {
+    int key_count = sizeof(random_keys) / sizeof(random_keys[0]);
+    int random_index = rand() % key_count;
+    KeySym selected_key = random_keys[random_index];
+    
+    KeyCode kcode = XKeysymToKeycode(dpy, selected_key);
+    
+    if (kcode != 0) {
+        Window focused;
+        int revert;
+        XGetInputFocus(dpy, &focused, &revert);
+        
+        XTestFakeKeyEvent(dpy, kcode, True, 0);
+        XTestFakeKeyEvent(dpy, kcode, False, 0);
+        XFlush(dpy);
+        
+        char *key_name = XKeysymToString(selected_key);
+        printf("키 입력: %s\n", key_name ? key_name : "error");
+    } else {
+        printf("키코드 변환 실패\n");
+    }
+}
+
+// 마우스 이동 함수
 void generate_mouse_move(Display *dpy) {
     Screen *screen = DefaultScreenOfDisplay(dpy);
     int screen_width = WidthOfScreen(screen);
@@ -33,13 +74,16 @@ void generate_mouse_move(Display *dpy) {
     printf("마우스 이동: (%d, %d)\n", x, y);
 }
 
-void generate_mouse_click(Display *dpy) {
-    // 좌클릭 이벤트 생성
-    XTestFakeButtonEvent(dpy, 1, True, 0);
-    XTestFakeButtonEvent(dpy, 1, False, 0);
-    XFlush(dpy);
+// 랜덤 이벤트 실행 함수
+void execute_random_event(Display *dpy) {
+    // 키보드 60%, 마우스 이동 40%
+    int event_type = rand() % 100;
     
-    printf("좌클릭\n");
+    if (event_type < 60) {
+        generate_keyboard_input(dpy);
+    } else {
+        generate_mouse_move(dpy);
+    }
 }
 
 int main() {
@@ -55,53 +99,10 @@ int main() {
     
     printf("program on :)\n");
     
-    int key_count = sizeof(random_keys) / sizeof(random_keys[0]);
-    
     while (1) {
-        // 1초 ~ 10분 (600초) 사이의 랜덤한 시간 대기
-        int wait_seconds = 1 + rand() % 600;
-        
-        printf("%d초...\n", wait_seconds);
-        
-        // 1초씩 카운트다운하며 대기
-        for (int i = wait_seconds; i > 0; i--) {
-            printf("\r남은 시간: %d초   ", i);
-            fflush(stdout);
-            sleep(1);
-        }
-        printf("\r남은 시간: 0초   \n");
-        
-        // 랜덤한 이벤트 타입 선택 (키보드 50%, 마우스 이동 30%, 마우스 클릭 20%)
-        int event_type = rand() % 100;
-        
-        if (event_type < 50) {
-            // 키보드 이벤트
-            int random_index = rand() % key_count;
-            KeySym selected_key = random_keys[random_index];
-            
-            KeyCode kcode = XKeysymToKeycode(dpy, selected_key);
-            
-            if (kcode != 0) {
-                Window focused;
-                int revert;
-                XGetInputFocus(dpy, &focused, &revert);
-                
-                XTestFakeKeyEvent(dpy, kcode, True, 0);
-                XTestFakeKeyEvent(dpy, kcode, False, 0);
-                XFlush(dpy);
-                
-                char *key_name = XKeysymToString(selected_key);
-                printf("키 입력: %s\n", key_name ? key_name : "error");
-            } else {
-                printf("키코드 변환 실패\n");
-            }
-        } else if (event_type < 80) {
-            // 마우스 이동 이벤트
-            generate_mouse_move(dpy);
-        } else {
-            // 마우스 클릭 이벤트
-            generate_mouse_click(dpy);
-        }
+        int wait_seconds = generate_random_wait_time();
+        countdown(wait_seconds);
+        execute_random_event(dpy);
     }
     
     XCloseDisplay(dpy);
